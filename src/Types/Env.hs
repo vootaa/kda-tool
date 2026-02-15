@@ -15,6 +15,7 @@ import           Chainweb.Api.ChainId
 import           Chainweb.Api.Transaction
 import           Control.Error
 import           Control.Lens (makeLenses)
+import           Control.Monad ((<=<))
 import           Control.Monad.Reader
 import           Data.Aeson hiding (Encoding)
 import           Data.Binary.Builder

@@ -24,7 +24,6 @@ import           Data.ByteArray (ByteArrayAccess)
 import qualified Data.ByteArray as BA
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as BS
-import qualified Data.ByteString.Base16 as B16
 import qualified Data.Map as Map
 import           Data.String (IsString, fromString)
 import           Data.Text (Text)
@@ -34,6 +33,7 @@ import qualified Data.Text.IO as T
 import           Data.Word (Word32)
 import qualified Data.YAML.Aeson as YA
 import           GHC.Natural
+import           Pact.Types.Util (parseB16TextOnly, toB16Text)
 import           System.IO
 import           System.IO.Echo
 import           Text.Read (readMaybe)
@@ -169,7 +169,7 @@ decodeMnemonic t = do
 
 decodeEncryptedMnemonic :: Text -> IO (Either String KadenaKey)
 decodeEncryptedMnemonic t = do
-  case Crypto.xprv =<< fmapL T.unpack (B16.decodeBase16 (T.encodeUtf8 t)) of
+  case Crypto.xprv =<< fmapL T.unpack (fromB16 t) of
     Left _ -> pure $ Left "Could not decode HD key"
     Right xprv -> do
       hSetBuffering stderr NoBuffering
@@ -232,10 +232,10 @@ textTo :: IsString a => Text -> a
 textTo = fromString . T.unpack
 
 toB16 :: ByteString -> Text
-toB16 = B16.encodeBase16
+toB16 = toB16Text
 
 fromB16 :: Text -> Either Text ByteString
-fromB16 txt = B16.decodeBase16 $ T.encodeUtf8 txt
+fromB16 txt = first T.pack $ parseB16TextOnly txt
 
 readNatural :: String -> Maybe Natural
 readNatural = readMaybe

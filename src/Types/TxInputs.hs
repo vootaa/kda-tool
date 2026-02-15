@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Types.TxInputs where
 
@@ -6,6 +7,7 @@ module Types.TxInputs where
 import           Control.Applicative
 import           Control.Error
 import           Data.Aeson as A
+import qualified Data.Aeson.Key as K
 import           Data.Aeson.Types
 import qualified Data.ByteString.Lazy as LB
 import           Data.Text (Text)
@@ -13,6 +15,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
 import           Pact.ApiReq
+import qualified Pact.JSON.Encode as J
 import           Pact.Types.Lang
 import           Pact.Types.RPC
 ------------------------------------------------------------------------------
@@ -39,8 +42,8 @@ data ExecInputs = ExecInputs
   , _execInputs_dataOrFile :: Either Value FilePath
   } deriving (Eq,Show)
 
-execInputsPairs :: (Monoid a, KeyValue a) => ExecInputs -> a
-execInputsPairs ei = mconcat
+execInputsPairs :: ExecInputs -> [Pair]
+execInputsPairs ei =
   [ either ("code" .=) ("codeFile" .=) $ _execInputs_codeOrFile ei
   , either ("data" .=) ("dataFile" .=) $ _execInputs_dataOrFile ei
   ]
@@ -70,38 +73,45 @@ txInputsToApiReq txi = do
       n = Just $ _txInputs_networkId txi
   case _txInputs_payload txi of
     Left c -> pure $ ApiReq
-      (Just t)
-      (let PactId pid = _cmPactId c in hush $ fromText' pid)
-      (Just $ _cmStep c)
-      (Just $ _cmRollback c)
-      (Just $ _cmData c)
-      (_cmProof c)
-      Nothing
-      Nothing
-      Nothing
-      Nothing
-      (Just $ fromMaybe [] $ _txInputs_signers txi)
-      (_txInputs_nonce txi)
-      (Just $ _txInputs_meta txi)
-      n
+      { _ylType = Just t
+      , _ylPactTxHash = let PactId pid = _cmPactId c in hush $ fromText' pid
+      , _ylStep = Just $ _cmStep c
+      , _ylRollback = Just $ _cmRollback c
+      , _ylData = legacyToAeson (_cmData c)
+      , _ylProof = _cmProof c
+      , _ylDataFile = Nothing
+      , _ylCode = Nothing
+      , _ylCodeFile = Nothing
+      , _ylKeyPairs = Nothing
+      , _ylSigners = Just $ fromMaybe [] $ _txInputs_signers txi
+      , _ylVerifiers = Nothing
+      , _ylNonce = _txInputs_nonce txi
+      , _ylPublicMeta = Just $ _txInputs_meta txi
+      , _ylNetworkId = n
+      }
     Right ei -> do
       d <- getOrReadFile (eitherDecode . LB.fromStrict . T.encodeUtf8) $ _execInputs_dataOrFile ei
       c <- getOrReadFile Right $ _execInputs_codeOrFile ei
       pure $ ApiReq
-        (Just t)
-        Nothing
-        Nothing
-        Nothing
-        (hush d)
-        Nothing
-        Nothing
-        (hush c)
-        Nothing
-        Nothing
-        (Just $ fromMaybe [] $ _txInputs_signers txi)
-        (_txInputs_nonce txi)
-        (Just $ _txInputs_meta txi)
-        n
+        { _ylType = Just t
+        , _ylPactTxHash = Nothing
+        , _ylStep = Nothing
+        , _ylRollback = Nothing
+        , _ylData = hush d
+        , _ylProof = Nothing
+        , _ylDataFile = Nothing
+        , _ylCode = hush c
+        , _ylCodeFile = Nothing
+        , _ylKeyPairs = Nothing
+        , _ylSigners = Just $ fromMaybe [] $ _txInputs_signers txi
+        , _ylVerifiers = Nothing
+        , _ylNonce = _txInputs_nonce txi
+        , _ylPublicMeta = Just $ _txInputs_meta txi
+        , _ylNetworkId = n
+        }
+
+legacyToAeson :: A.ToJSON a => a -> Maybe Value
+legacyToAeson = A.decode . A.encode
 
 getOrReadFile :: (Text -> Either String a) -> Either a FilePath -> IO (Either String a)
 getOrReadFile _ (Left a) = pure $ Right a
@@ -110,24 +120,32 @@ getOrReadFile parser (Right fp) = do
   pure $ parser t
 
 instance ToJSON TxInputs where
-  toJSON ti = A.Object $ payloadPairs <> mconcat
+  toJSON ti = object $ payloadPairs ++
     [ "type" .= _txInputs_type ti
-    , "signers" .= fromMaybe [] (_txInputs_signers ti)
-    , "nonce" .?= _txInputs_nonce ti
+    , "signers" .= maybe [] (map J.toJsonViaEncode) (_txInputs_signers ti)
+    , "nonce" .= _txInputs_nonce ti
 
     -- TODO Not sure if this should be "meta" or "publicMeta". I think it should
     -- be "meta" because we want to move people towards the key used in the
     -- actual Pact API and people shouldn't be consuming the output of this
     -- function with a legacy pact command line executable.
-    , "meta" .= _txInputs_meta ti
+    , "meta" .= J.toJsonViaEncode (_txInputs_meta ti)
 
-    , "networkId" .= _txInputs_networkId ti
+    , "networkId" .= J.toJsonViaEncode (_txInputs_networkId ti)
     ]
     where
       payloadPairs = either contMsgJsonPairs execInputsPairs $ _txInputs_payload ti
-      k .?= v = case v of
-        Nothing -> mempty
-        Just v' -> k .= v'
+
+contMsgJsonPairs :: ContMsg -> [Pair]
+contMsgJsonPairs c =
+  [ "pactTxHash" .= pid
+  , "step" .= _cmStep c
+  , "rollback" .= _cmRollback c
+  , "data" .= legacyToAeson (_cmData c)
+  , "proof" .= fmap J.toJsonViaEncode (_cmProof c)
+  ]
+  where
+    PactId pid = _cmPactId c
 
 
 instance FromJSON TxInputs where
@@ -164,9 +182,9 @@ parseMaybePair
   -> Text
   -> Parser (Maybe (Either a FilePath))
 parseMaybePair o name = do
-  mn <- o .:? name
+  mn <- o .:? K.fromText name
   let nameFile = name <> "File"
-  mf <- o .:? nameFile
+  mf <- o .:? K.fromText nameFile
   case (mn,mf) of
     (Nothing,Nothing) -> pure Nothing
     (Just n,Nothing) -> pure $ Just $ Left n

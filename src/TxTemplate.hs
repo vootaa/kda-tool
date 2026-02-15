@@ -7,8 +7,8 @@ module TxTemplate where
 import           Control.Applicative
 import           Control.Monad
 import qualified Data.Aeson as A
-import qualified Data.Aeson.Parser as A
 import qualified Data.Attoparsec.ByteString as Atto
+import qualified Data.Attoparsec.ByteString.Char8 as AttoC8
 import           Data.Bifunctor
 import           Data.Either
 import qualified Data.HashMap.Strict as HM
@@ -124,10 +124,11 @@ replicateSingleArr _ v = v
 
 parseTextValue :: (Text, Text) -> Either String (Text, MU.Value)
 parseTextValue (k,vt) = do
-    let bs = encodeUtf8 vt
-        num = A.Number <$> Atto.parseOnly (A.scientific <* Atto.endOfInput) bs
-        str = Right $ A.String vt
-    v <- first addLoc $ A.eitherDecodeStrict bs <|> num <|> str
+    v <- first addLoc $ case A.eitherDecodeStrict bs of
+      Right x -> Right x
+      Left _ -> case num of
+        Right x -> Right x
+        Left _ -> str
     v2 <- case v of
       A.Number _ -> pure $ A.String vt
       A.String _ -> pure v
@@ -135,6 +136,9 @@ parseTextValue (k,vt) = do
       _ -> Left "Template values must be a Number, String, or Array of numbers or strings"
     pure (k,mFromJSON v2)
   where
+    bs = encodeUtf8 vt
+    num = A.Number <$> Atto.parseOnly (AttoC8.scientific <* AttoC8.endOfInput) bs
+    str = Right $ A.String vt
     addLoc s = unlines [s, "...in field " <> T.unpack k <> ": " <> T.unpack vt]
 
 parseValueValue :: (Text, A.Value) -> Either String (Text, MU.Value)

@@ -8,7 +8,10 @@ module Commands.WalletSign
 ------------------------------------------------------------------------------
 import           Control.Error
 import           Control.Lens
+import           Control.Monad
 import           Control.Monad.Except
+import           Control.Monad.Trans.Class (lift)
+import qualified Data.Aeson as A
 import           Data.Aeson.Lens
 import           Data.List
 import qualified Data.Set as S
@@ -25,6 +28,7 @@ import           Pact.Types.Command
 import           Pact.Types.KeySet
 import           Pact.Types.Names
 import           Pact.Types.RPC
+import           Pact.Types.SigData (PublicKeyHex(..))
 import           Servant.API
 import           Servant.Client
 import           System.Exit
@@ -161,7 +165,9 @@ csdToSigningRequest csd = do
       Continuation _ -> Left "Cannot sign CONT transactions with the old signing API"
       Exec m -> do
         let code = _pcCode $ _pmCode m
-            d = _pmData m ^? _Object
+            d = case A.decode (A.encode (_pmData m)) of
+                  Just (A.Object o) -> Just o
+                  _ -> Nothing
         let caps = map mkDappCap $ S.toList $ S.fromList $ concatMap _siCapList $ _pSigners p
         let n = Just $ _pNonce p
             meta = _pMeta p
@@ -169,7 +175,7 @@ csdToSigningRequest csd = do
             gasLimit = Just $ _pmGasLimit meta
             ttl = Just $ _pmTTL meta
             sender = Just $ AccountName $ _pmSender meta
-            extraSigners = case map (PublicKeyText . toS . _siPubKey) $ filter (\s -> null $ _siCapList s) $ _pSigners p of
+            extraSigners = case map (PublicKeyHex . toS . _siPubKey) $ filter (\s -> null $ _siCapList s) $ _pSigners p of
               [] -> Nothing
               ks -> Just ks
         pure $ SigningRequest code d caps n cid gasLimit ttl sender extraSigners

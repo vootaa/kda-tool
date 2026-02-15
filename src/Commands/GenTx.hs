@@ -100,7 +100,7 @@ genFromContents op tplContents useOldOutput = do
         cmds :: [Command Text] <- mapM (fmap snd . lift . Pact.mkApiReqCmd True "") apiReqs
         let chooseFormat i =
               if useOldOutput
-                then pure $ encodeText i
+              then fmap encodeText $ sdToCsd i
                 else fmap encodeText $ sdToCsd i
         let outs :: [Text] = catMaybes $ map (chooseFormat <=< hush . commandToSigData) cmds
         let outPat = maybe (defaultOutPat augmentedVars) T.pack $ _genData_outFilePat gd

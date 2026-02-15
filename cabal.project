@@ -1,4 +1,6 @@
-packages: kda-tool.cabal
+packages:
+    kda-tool.cabal
+    ../signing-api/kadena-signing-api/kadena-signing-api.cabal
 with-compiler: ghc-9.12.2
 
 package pact
@@ -6,17 +8,19 @@ package pact
     -- avoid conflict with cryptonite during linking
     flags: +cryptonite-ed25519 -build-tool +no-advice
 
-source-repository-package
-    type: git
-    location: https://github.com/mightybyte/HsYAML.git
-    tag: 2ad3cbd1c84f8ab362cf1f5fd4bb3e869dfcc102
-    --sha256: 1cmwavqz7vdpjvfybxbjphnw7448xy0353wmy9h29ix24lv8w7rr
+package cryptonite-openssl
+    extra-lib-dirs: /opt/homebrew/opt/openssl@3/lib
+    extra-include-dirs: /opt/homebrew/opt/openssl@3/include
 
-source-repository-package
-    type: git
-    location: https://github.com/mightybyte/HsYAML-aeson.git
-    tag: 077110e5e52dc91d593c546dd1baaafd3066558d
-    --sha256: 1r91ldq4sb49wqg1agvbjj21z6nwiyk3yx4r80arz0fhcv083czv
+package hashes
+    flags: +with-openssl +openssl-use-pkg-config
+    extra-lib-dirs: /opt/homebrew/opt/openssl@3/lib
+    extra-include-dirs: /opt/homebrew/opt/openssl@3/include
+
+package ethereum
+    flags: +openssl-use-pkg-config
+    extra-lib-dirs: /opt/homebrew/opt/openssl@3/lib
+    extra-include-dirs: /opt/homebrew/opt/openssl@3/include
 
 source-repository-package
     type: git
@@ -27,7 +31,7 @@ source-repository-package
 source-repository-package
     type: git
     location: https://github.com/vootaa/chainweb-api.git
-    tag: b3e28d62c622ebda0d84e136ea6c995d5f97e46f
+    tag: 1b2de025cfdc09698bfb1ec3807cd85405d6a339
     --sha256: 1m9x9n5mwmv97fkv2z3hvlhlj59xm2mpsc816hzriw28pv1jb9zh
 
 source-repository-package
@@ -39,24 +43,39 @@ source-repository-package
 source-repository-package
     type: git
     location: https://github.com/vootaa/pact.git
-    tag: 83c5944991d6edcd34d79f9fbf8e537d060689c6
+    tag: 4208012e3f2fdf1721c24cdcb97de5f64fd5f58a
     --sha256: 0l59xi2by6l6gi10r8c437m7ics29215zr0zl1syyr3039vgmv0x
 
 source-repository-package
     type: git
-    location: https://github.com/vootaa/signing-api.git
-    tag: b60553cc61fa15c26763ca59974e0de3512b2d66
-    --sha256: 1xi6g67grs2dm4z4jj4l6h3lz0zy3pgi7xj2yy3y1d07m6gfwbrx
-    subdir: kadena-signing-api
+    location: https://github.com/vootaa/pact-json.git
+    tag: 1d260bfaa48312b54851057885de4c43c420e35f
+    --sha256: 0fzq4mzaszj5clvixx9mn1x6r4dcrnwvbl2znd0p5mmy5h2jr0hh
+
+source-repository-package
+    type: git
+    location: https://github.com/vootaa/kadena-ethereum-bridge.git
+    tag: 96bff6b35b2a2b6bf63f9d19b536f0c61102be36
+    --sha256: 0czl48hhlk8fl63jprg719x3ngrinhj6xs5rqm9cfzpcygp4wz4q
 
 allow-newer: hashable:base
 allow-newer: chainweb-api:aeson
+allow-newer: chainweb-api:vector
+allow-newer: chainweb-api:servant
+allow-newer: chainweb-api:bytestring
+allow-newer: chainweb-api:*
+allow-newer: servant:bifunctors
+allow-newer: kadena-signing-api:text
+allow-newer: kadena-signing-api:lens
+allow-newer: kadena-signing-api:*
+allow-newer: *:base
+allow-newer: *:aeson
+allow-newer: *:hashable
+allow-newer: *:unordered-containers
+allow-newer: *:template-haskell
+allow-newer: *:bifunctors
 
 -- bounds from pact
-constraints: aeson <2
-constraints: base16-bytestring <1
-constraints: base64-bytestring <1.1
-constraints: hashable <1.3.1
-constraints: prettyprinter <1.6.1
-constraints: unordered-containers <0.2.16
-constraints: tls <1.7.0
+constraints: prettyprinter <2
+constraints: tls <2
+constraints: lens >=5.3

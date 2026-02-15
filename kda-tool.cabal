@@ -1,4 +1,4 @@
-cabal-version:       3.16
+cabal-version:       3.8
 
 name:                kda-tool
 version:             1.2.0
@@ -80,6 +80,7 @@ library
     , network-uri
     , optparse-applicative
     , pact
+    , pact-json
     , process
     , resource-pool
     , retry
@@ -161,6 +162,7 @@ test-suite kda-tool-tests
     , network-uri
     , optparse-applicative
     , pact
+    , pact-json
     , process
     , resource-pool
     , retry

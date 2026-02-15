@@ -38,6 +38,7 @@ import qualified Data.YAML.Token as Y
 import           Kadena.SigningTypes
 import           GHC.Generics
 import           Options.Applicative hiding (Parser)
+import qualified Pact.JSON.Encode as J
 import           Pact.Types.Command
 import           System.Directory
 import           System.FilePath
@@ -144,15 +145,16 @@ commandSigDataToTransaction requireSigs csd = do
     pure $ mkTransaction pc (map userSigToSig sigs)
   where
     addDummy = maybe (if requireSigs then Nothing else Just dummySig) Just
-    dummySig = UserSig "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    dummySig = ED25519Sig "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
 -- | Converts chainweb-api's 'Sig' type to Pact's 'UserSig'.
 userSigToSig :: UserSig -> Sig
-userSigToSig = Sig . _usSig
+userSigToSig (ED25519Sig s) = Sig s
+userSigToSig _ = Sig ""
 
 -- | Converts Pact's 'UserSig' type to chainweb-api's 'Sig'.
 sigToUserSig :: Sig -> UserSig
-sigToUserSig = UserSig . unSig
+sigToUserSig = ED25519Sig . unSig
 
 --data SigData a = SigData
 --  { _sigDataHash :: PactHash
@@ -204,7 +206,7 @@ writeYaml fname csd = do
 writeJson :: FilePath -> Command Text -> IO FilePath
 writeJson fname c = do
   let fp = fname <> ".json"
-  LB.writeFile fp $ encode c
+  LB.writeFile fp $ J.encode c
   pure fp
 
 hasYamlExtension :: FilePath -> Bool
