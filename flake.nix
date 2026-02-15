@@ -1,5 +1,5 @@
 {
-  inputs.hs-nix-infra.url = "github:kadena-io/hs-nix-infra";
+  inputs.hs-nix-infra.url = "github:vootaa/hs-nix-infra";
   inputs.flake-utils.url = "github:numtide/flake-utils";
   inputs.nix-exe-bundle = { url = "github:3noch/nix-bundle-exe"; flake = false; };
   outputs = inputs@{ self, flake-utils, hs-nix-infra, ...}:
