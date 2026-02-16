@@ -25,10 +25,13 @@ hostPortFromText t = do
     if T.null ptext
       then Right $ HostPort h Nothing
       else do
-        (p,rest) <- first (const $ T.unpack $ "Error parsing port in: "<>t) $ decimal $ T.tail ptext
-        if T.null rest
-          then pure $ HostPort h (Just p)
-          else Left $ "Could not completely parse port in: " <> T.unpack t
+        case T.uncons ptext of
+          Just (':', portText) -> do
+            (p,rest) <- first (const $ T.unpack $ "Error parsing port in: "<>t) $ decimal portText
+            if T.null rest
+              then pure $ HostPort h (Just p)
+              else Left $ "Could not completely parse port in: " <> T.unpack t
+          _ -> Left $ "Could not parse port in: " <> T.unpack t
   where
     (h,ptext) = T.break (== ':') t
 
