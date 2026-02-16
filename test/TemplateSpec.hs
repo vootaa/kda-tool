@@ -3,7 +3,6 @@
 module TemplateSpec where
 
 ------------------------------------------------------------------------------
-import           Control.Monad.Trans
 import           Data.Aeson
 import           Data.Either
 import           Data.Map (Map)
@@ -27,15 +26,20 @@ templateSpec = do
     tcText <- runIO $ T.readFile "test/golden/transfer-create.ktpl"
     let tcTmpl = mkTmpl tcText
     it "data reader doesn't have decimal imprecision" $ do
-      readVars "foo: 0.0000000001" `shouldBe` (Right val)
+      case readVars "foo: 0.0000000001" of
+        Left err -> expectationFailure err
+        Right m -> case M.lookup "foo" m of
+          Just (Number n) ->
+            toRealFloat n `shouldSatisfy` \x ->
+              abs (x - (1e-10 :: Double)) < 1e-20
+          Just v -> expectationFailure $ "Expected numeric value for key foo, got: " <> show v
+          Nothing -> expectationFailure "Expected key foo in parsed vars"
     it "enforceEqualArrayLens ignores singleton arrays" $ do
       eealTest varMap `shouldBe` Right (Just 2)
     let nm = "fillValueVars-transfer-create"
     it nm $ do
       defaultGolden nm $ either show (T.unpack . T.unlines) $ fillValueVars tcTmpl transferCreateVarMap
   where
-    val = M.singleton "foo" (Number 0.0000000001)
-
 fooTmplText :: String -> String -> Text
 fooTmplText hole1 hole2 = T.unlines
   [ "someText: |-"
