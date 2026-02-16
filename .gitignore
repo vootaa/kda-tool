@@ -11,3 +11,4 @@ config.json
 *.kda
 *.json
 *.yaml
+.DS_Store
