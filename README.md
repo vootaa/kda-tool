@@ -1,6 +1,6 @@
 # KDA Command Line Tool
 
-A command line tool for automating all-things Kadena.
+A command line tool for automating Chainweb/Pact transaction workflows.
 
 ![Example Animation](https://s1.gifyu.com/images/kda-tool-demo3.gif)
 
@@ -10,7 +10,7 @@ A command line tool for automating all-things Kadena.
 * Construct transactions across multiple chains using transaction templates
 * Conveniently create transactions from personalized templates stored in a configurable public GitHub repo
 * Sign transactions with both plain ED25519 key pairs or with Chainweaver-compatible HD keys
-* Sign transactions using the Kadena wallet signing API
+* Sign transactions using wallet signing APIs
 * Sign transactions with your local chainweaver keys directly by entering your password
 * Easily test, send, and poll results on the blockchain for multiple transactions
 * Other basic operations for interacting with nodes
@@ -166,14 +166,14 @@ The `gen` command's `-t` option reads te template from a file on your local
 machine, but kda-tool has built-in support for predefined templates stored on
 GitHub with the `-g` option. For example, `kda gen -g transfer` will generate a
 transaction using a template called `transfer.ktpl` on GitHub. By default,
-kda-tool looks in the repository `kadena-io/txlib` to find the transaction
+kda-tool looks in the repository `vootaa/txlib` to find the transaction
 templates, but you can specify your own transaction repository using the `-r`
 option.
 
 ## Config File
 
 By default the `kda gen` command looks for transaction templates in the
-`kadena-io/txlib` GitHub repo. You can configure kda-tool to use your own
+`vootaa/txlib` GitHub repo. You can configure kda-tool to use your own
 transaction repos by creating a config file. The default location for the config
 file is `$HOME/.config/kda/config.json`. You can also pass the `-c` option to
 use your own config file stored somewhere else. Here is an example config file:
@@ -184,13 +184,13 @@ use your own config file stored somewhere else. Here is an example config file:
     "blockchaindev/my-marmalade-templates",
     "blockchaindev/txlib",
     "my-favorite-dex/txlib",
-    "kadena-io/txlib"
+    "vootaa/txlib"
   ]
 }
 ```
 
 Each repo is tried in the order they appear in the config file, stopping after
-the first one that works. This allows projects building on Kadena to publish
+the first one that works. This allows projects building on Chainweb to publish
 libraries of transation templates for working with their smart contracts and for
 users to use any combination of template sets that they desire.
 
@@ -234,7 +234,7 @@ signing.
 ### Signing with other wallets and the signing API
 
 The `kda wallet-sign` comamnd signs transactions using any wallet that supports
-the Kadena signing API (such as Chainweaver or Zelcore). By default, kda-tool
+the signing API (such as Chainweaver or Zelcore). By default, kda-tool
 will use the quicksign signing method that supports signing multiple
 transactions in a single signing request. If your wallet does not support
 quicksign, you can use the `--old` option to use the old single-transaction
@@ -243,7 +243,7 @@ each transaction will require a separate approval.
 
 ### Multi-sig signing
 
-Kadena has built-in support for multi-sig. Kda-tool's signing functions handle
+Chainweb/Pact workflows support multi-sig. Kda-tool's signing functions handle
 this as follows. Signing happens with YAML transaction format designed for
 easily accumulating signatures. You supply YAML files to any of the kda-tool
 signing commands. If the transaction still needs more signatures after you sign,
