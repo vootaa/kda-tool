@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Commands.Mempool
@@ -25,7 +24,7 @@ mempoolCommand shp mApiVer mNetwork c = do
   let shp2 = case shp of
         SchemeHostPort Nothing hp -> SchemeHostPort (Just Https) hp
         _ -> shp
-  resp <- mempoolPending shp2 (fromMaybe "0.0" mApiVer) (fromMaybe "mainnet01" mNetwork) c
+  resp <- mempoolPending shp2 (fromMaybe "0.0" mApiVer) (fromMaybe "mono" mNetwork) c
   case statusCode $ responseStatus resp of
     200 -> T.putStrLn $ decodeUtf8 $ LB.toStrict $ responseBody resp
     _ -> do

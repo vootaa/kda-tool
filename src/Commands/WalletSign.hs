@@ -7,12 +7,10 @@ module Commands.WalletSign
 
 ------------------------------------------------------------------------------
 import           Control.Error
-import           Control.Lens
 import           Control.Monad
 import           Control.Monad.Except
 import           Control.Monad.Trans.Class (lift)
 import qualified Data.Aeson as A
-import           Data.Aeson.Lens
 import           Data.List
 import qualified Data.Set as S
 import           Data.String.Conv
@@ -25,7 +23,6 @@ import           Katip
 import           Pact.Types.Capability
 import           Pact.Types.ChainMeta
 import           Pact.Types.Command
-import           Pact.Types.KeySet
 import           Pact.Types.Names
 import           Pact.Types.RPC
 import           Pact.Types.SigData (PublicKeyHex(..))

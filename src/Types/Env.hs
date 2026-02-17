@@ -568,8 +568,8 @@ apiVerP = strArgument $ mconcat
 networkP :: Parser Text
 networkP = strArgument $ mconcat
   [ metavar "NETWORK"
-  , help "The node's network ID (i.e. mainnet01, testnet04, etc)"
-  , completeWith ["mainnet01", "testnet04", "development"]
+  , help "The node's network ID (i.e. mono, triad, icosa, development, etc)"
+  , completeWith ["mono", "triad", "icosa", "development", "mainnet01", "testnet04"]
   ]
 
 nodeCommands :: Mod CommandFields SubCommand

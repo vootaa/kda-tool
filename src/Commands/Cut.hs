@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Commands.Cut
@@ -23,7 +22,7 @@ import           Types.Node
 cutCommand :: Env -> SchemeHostPort -> Maybe Text -> Maybe Text -> IO ()
 cutCommand e shp mApiVer mNetwork = do
   let le = _env_logEnv e
-  resp <- nodeGetCut le shp (fromMaybe "0.0" mApiVer) (fromMaybe "mainnet01" mNetwork)
+  resp <- nodeGetCut le shp (fromMaybe "0.0" mApiVer) (fromMaybe "mono" mNetwork)
   case statusCode $ responseStatus resp of
     200 -> T.putStrLn $ decodeUtf8 $ LB.toStrict $ responseBody resp
     _ -> do

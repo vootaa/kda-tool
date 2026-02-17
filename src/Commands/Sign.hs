@@ -9,7 +9,6 @@ module Commands.Sign
 import qualified Cardano.Crypto.Wallet as Crypto
 import           Control.Error
 import qualified Crypto.Hash as Crypto
-import           Control.Monad
 import           Control.Monad.Except
 import           Control.Monad.Trans.Class (lift)
 import           Data.ByteString (ByteString)
