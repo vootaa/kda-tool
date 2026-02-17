@@ -116,7 +116,7 @@ logFLE le sev a msg = runKatipT le $ logF a mempty sev msg
 
 instance ToObject Request where
   toObject r = mconcat
-    [ "method" .= (decodeUtf8 $ method r)
+    [ "method" .= decodeUtf8 (method r)
     , "url" .= reqUrl r
     , "headers" .= tshow (requestHeaders r)
     , "body" .= bodyText (requestBody r)
@@ -265,7 +265,7 @@ signatureP = argument signatureReader $ mconcat
   ]
   where
     signatureReader = eitherReader
-      ((either (Left . T.unpack) toSignature) . fromB16 . T.pack)
+      (either (Left . T.unpack) toSignature . fromB16 . T.pack)
 
 msgFileP :: Parser FilePath
 msgFileP = strOption $ mconcat
@@ -345,7 +345,7 @@ shortOutputP = flag False True $ mconcat
 data Holes = Holes
   deriving (Eq,Ord,Show,Read)
 
-data TxArgs = TxArgs
+newtype TxArgs = TxArgs
   { _txArgs_templateName :: Text
   } deriving (Eq,Ord,Show,Read)
 
@@ -568,8 +568,8 @@ apiVerP = strArgument $ mconcat
 networkP :: Parser Text
 networkP = strArgument $ mconcat
   [ metavar "NETWORK"
-  , help "The node's network ID (i.e. mono, triad, icosa, development, etc)"
-  , completeWith ["mono", "triad", "icosa", "development", "mainnet01", "testnet04"]
+  , help "The node's network ID (i.e. mono, triad, icosa, mono-dev, triad-dev, icosa-dev)"
+  , completeWith ["mono", "triad", "icosa", "mono-dev", "triad-dev", "icosa-dev"]
   ]
 
 nodeCommands :: Mod CommandFields SubCommand

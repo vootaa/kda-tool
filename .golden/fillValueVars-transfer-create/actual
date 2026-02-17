@@ -10,7 +10,7 @@ publicMeta:
   gasLimit: 2300
   gasPrice: 0.000001
   ttl: 600
-networkId: testnet04
+networkId: mono-dev
 signers:
   - public: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     caps:
@@ -32,7 +32,7 @@ publicMeta:
   gasLimit: 2300
   gasPrice: 0.000001
   ttl: 600
-networkId: testnet04
+networkId: mono-dev
 signers:
   - public: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     caps:

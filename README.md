@@ -47,7 +47,7 @@ meta:
   gasLimit: 2300
   gasPrice: 0.000001
   ttl: 600
-networkId: testnet04
+networkId: mono-dev
 signers:
   - public: badbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadb
     caps:
@@ -346,7 +346,7 @@ Now when you make changes to your smart contract, testing them is as simple as:
 
 ```
 $ kda gen -t deploy.ktpl -d deploy.yaml
-network: testnet04
+network: mono-dev
 Wrote commands to: ["tx-5.yaml","tx-6.yaml","tx-7.yaml"]
 $ kda sign -k my-hd-key.phrase tx-*.yaml
 Wrote 3 signatures to the following files: tx-5.json, tx-6.json, tx-7.json

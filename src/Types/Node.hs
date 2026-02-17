@@ -1,7 +1,4 @@
-{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
-{-# LANGUAGE TypeApplications #-}
 
 module Types.Node where
 
@@ -42,7 +39,7 @@ data Node = Node
   , _node_httpManager :: Manager
   , _node_serverType :: ServerType
   , _node_nodeInfo :: Maybe NodeInfo
-  -- ^ mainnet01, testnet04, etc or Nothing if it's a pact -s server
+  -- ^ mono, triad, icosa, mono-dev, triad-dev, icosa-dev, etc or Nothing if it's a pact -s server
   }
 
 getNodeServiceApi :: LogEnv -> SchemeHostPort -> IO (Either String Node)
@@ -115,7 +112,7 @@ queryHostPort le s hp urlPath = ExceptT $ do
     resp <- httpLbs req mgr
     let status = responseStatus resp
     return $ if statusIsSuccessful status
-      then Right $ (mgr, responseBody resp)
+      then Right (mgr, responseBody resp)
       else Left $ printf "Got HTTP status %d from %s" (statusCode status) shpText
 
 chainwebApiRoot :: Scheme -> HostPort -> Text -> Text -> Text
@@ -144,7 +141,7 @@ nodeApiRoot n =
 
 nodeChainRoot :: Node -> Text -> Text
 nodeChainRoot n c =
-    case (_node_serverType n) of
+    case _node_serverType n of
       PactServer -> nodeApiRoot n
       ChainwebServer ->
         nodeApiRoot n <>
@@ -152,7 +149,7 @@ nodeChainRoot n c =
 
 nodePactRoot :: Node -> Text -> Text
 nodePactRoot n c =
-    case (_node_serverType n) of
+    case _node_serverType n of
       PactServer -> nodeApiRoot n
       ChainwebServer ->
         nodeChainRoot n c <>

@@ -39,7 +39,7 @@ templateSpec = do
     let nm = "fillValueVars-transfer-create"
     it nm $ do
       defaultGolden nm $ either show (T.unpack . T.unlines) $ fillValueVars tcTmpl transferCreateVarMap
-  where
+
 fooTmplText :: String -> String -> Text
 fooTmplText hole1 hole2 = T.unlines
   [ "someText: |-"
@@ -63,7 +63,7 @@ transferCreateVarMap = M.fromList
     , ("chain", mkArr ["0", "1"])
     , ("from-acct", String "alice")
     , ("from-key", String "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-    , ("network", String "testnet04")
+    , ("network", String "mono-dev")
     , ("to-acct", String "bob")
     , ("to-keys", mkArr [mkArr ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                         ,"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
